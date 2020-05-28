@@ -87,7 +87,7 @@ def ParsingLotteryByDate(Year, Month):
         ResultList.append(SingleDayDict)
     return ResultList
 
-def main():
+def GetLotteryHistory():
     StartYear = 103
     EndYear = datetime.datetime.today().year - 1911
     EndMonth = datetime.datetime.today().month
@@ -101,6 +101,10 @@ def main():
             FinalResultArray += ParsingLotteryByDate('{0:03d}'.format(TargetYear), '{0:01d}'.format(TargetMonth))
             time.sleep(0.5)
 
+    return FinalResultArray
+
+def main():
+    FinalResultArray = GetLotteryHistory()
     FinalResultArray = sorted(FinalResultArray, key=lambda k: k['Index'])
     with open('FinalResultList.bin', 'wb') as fp:
         pickle.dump(FinalResultArray, fp)
