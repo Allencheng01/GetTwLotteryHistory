@@ -33,22 +33,22 @@ import pickle
 import time
 
 Payload = {
-'__EVENTTARGET' : '',
-'__EVENTARGUMENT' : '',
-'__LASTFOCUS' : '',
-'__VIEWSTATE' : '',
-'__VIEWSTATEGENERATOR' : '',
+'__EVENTTARGET': '',
+'__EVENTARGUMENT': '' ,
+'__LASTFOCUS': '',
+'__VIEWSTATE': '',
+'__VIEWSTATEGENERATOR': '',
 '__EVENTVALIDATION': '',
-'Lotto649Control_history$DropDownList1': '2',
-'Lotto649Control_history$chk': 'radYM',
-'Lotto649Control_history$dropYear': '103',
-'Lotto649Control_history$dropMonth': '4',
-'Lotto649Control_history$btnSubmit': '查詢',
+'SuperLotto638Control_history1$DropDownList1': '1',
+'SuperLotto638Control_history1$chk': 'radYM',
+'SuperLotto638Control_history1$dropYear': '109',
+'SuperLotto638Control_history1$dropMonth': '5',
+'SuperLotto638Control_history1$btnSubmit': '查詢',
 }
 
-RequestUrl = "https://www.taiwanlottery.com.tw/Lotto/Lotto649/history.aspx"
+RequestUrl = "https://www.taiwanlottery.com.tw/lotto/superlotto638/history.aspx"
 
-def ParsingLotteryByDate(Year, Month):
+def ParsingLotteryByDate_2(Year, Month):
     print("Parsing {0}/{1} data".format(Year, Month))
     Sess = requests.session()
     Sess.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36'
@@ -61,16 +61,20 @@ def ParsingLotteryByDate(Year, Month):
             tag = soup0.find('input', {'id':key})
             if tag != None:
                 Payload[key] = tag['value']
-    Payload['Lotto649Control_history$dropYear'] = Year
-    Payload['Lotto649Control_history$dropMonth'] = Month
+    Payload['SuperLotto638Control_history1$dropYear'] = Year
+    Payload['SuperLotto638Control_history1$dropMonth'] = Month
 
     Result1 = Sess.post(RequestUrl, data=Payload)
+    with open('log.txt', 'w', encoding='utf-8') as wfd:
+        wfd.write(Result1.text)
     soup1 = BeautifulSoup(Result1.text, features='lxml')
 
     # LotteryNumbers = soup1.findAll('span', id = re.compile(r'Lotto649Control_history_dlQuery_SNo[\w]+'))
-    LotteryNumbers = soup1.findAll(id=re.compile(r'Lotto649Control_history_dlQuery_SNo[\w]+'))
-    LotteryDays    = soup1.findAll(id=re.compile(r'Lotto649Control_history_dlQuery_L649_DDate_[\w]+'))
-    LotteryIndex    = soup1.findAll(id=re.compile(r'Lotto649Control_history_dlQuery_L649_DrawTerm_[\w]+'))
+    # SuperLotto638Control_history1_dlQuery_SNo1_
+    # SuperLotto638Control_history1_dlQuery_DrawTerm_0
+    LotteryNumbers = soup1.findAll(id=re.compile(r'SuperLotto638Control_history1_dlQuery_SNo[\w]+'))
+    LotteryDays    = soup1.findAll(id=re.compile(r'SuperLotto638Control_history1_dlQuery_Date_[\w]+'))
+    LotteryIndex    = soup1.findAll(id=re.compile(r'SuperLotto638Control_history1_dlQuery_DrawTerm_[\w]+'))
     ResultList = list()
 
     if (len(LotteryDays) * 7) != len(LotteryNumbers):
@@ -87,7 +91,7 @@ def ParsingLotteryByDate(Year, Month):
         ResultList.append(SingleDayDict)
     return ResultList
 
-def GetLotteryHistory():
+def GetLotteryHistory_2():
     StartYear = 103
     EndYear = datetime.datetime.today().year - 1911
     EndMonth = datetime.datetime.today().month
@@ -98,18 +102,14 @@ def GetLotteryHistory():
         for TargetMonth in range(1, 13):
             if (TargetYear >= EndYear) and (TargetMonth > EndMonth):
                 break
-            FinalResultArray += ParsingLotteryByDate('{0:03d}'.format(TargetYear), '{0:01d}'.format(TargetMonth))
+            FinalResultArray += ParsingLotteryByDate_2('{0:03d}'.format(TargetYear), '{0:01d}'.format(TargetMonth))
             # time.sleep(0.5)
 
     return FinalResultArray
 
 def main():
-    FinalResultArray = GetLotteryHistory()
+    FinalResultArray = GetLotteryHistory_2()
     FinalResultArray = sorted(FinalResultArray, key=lambda k: k['Index'])
-    with open('FinalResultList.bin', 'wb') as fp:
-        pickle.dump(FinalResultArray, fp)
-    for item in FinalResultArray:
-        print(item)
 
 if __name__ == "__main__":
     sys.exit(main())

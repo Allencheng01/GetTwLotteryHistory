@@ -9,13 +9,13 @@ import MyParam
 
 def predict():
     _args_ = MyParam.ARGS()
-    if _args_.ReFetchLog or not os.path.isfile(MyParam.SAVE_LIST_FILENAME):
+    if _args_.ReFetchLog or not os.path.isfile(MyParam.SAVE_LIST_FILENAME_2):
         LotteryHistoryLists = GetLotteryHistory()
         LotteryHistoryLists = sorted(LotteryHistoryLists, key=lambda k: k['Index'])
-        with open(MyParam.SAVE_LIST_FILENAME, 'wb') as wfp:
+        with open(MyParam.SAVE_LIST_FILENAME_2, 'wb') as wfp:
             pickle.dump(LotteryHistoryLists, wfp)
     else:
-        with open(MyParam.SAVE_LIST_FILENAME, 'rb') as rfp:
+        with open(MyParam.SAVE_LIST_FILENAME_2, 'rb') as rfp:
             LotteryHistoryLists = pickle.load(rfp)
 
     TargetIndex = len(LotteryHistoryLists)
@@ -42,7 +42,7 @@ def predict():
 def main():
     for i in range(0, 7):
         MyParam.TRAIN_NUM_INDEX = i
-        MyParam.CHECKPOINT_FILENAME = 'checkpoint{0}.ckpt'.format(MyParam.TRAIN_NUM_INDEX)
+        MyParam.CHECKPOINT_FILENAME = 'checkpoint_2_{0}.ckpt'.format(MyParam.TRAIN_NUM_INDEX)
         predict()
 
 if __name__ == "__main__":

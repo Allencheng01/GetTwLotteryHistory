@@ -10,6 +10,15 @@ import torchvision
 
 import MyParam
 
+class Embedded(nn.Module):
+    def __init__(self,VocabSize,EmbeddingSize):
+        super().__init__()
+        self.embeddings = nn.Embedding(VocabSize, EmbeddingSize)
+    def forward(self, x):
+        x = self.embeddings(x)
+        x = x.permute(0,3,1,2)
+        return x
+
 def _make_divisible(v, divisor, min_value=None):
     """
     This function is taken from the original tf repo.
@@ -71,7 +80,7 @@ class InvertedResidual(nn.Module):
 # class MobileNetV2(nn.Module):
 class MobileNet_Lottery(nn.Module):
     def __init__(self,
-                VocabSize,
+                 VocabSize,
                  EmbeddingSize,
                  num_classes=1000,
                  width_mult=1.0,
@@ -99,15 +108,25 @@ class MobileNet_Lottery(nn.Module):
         last_channel = 1280
 
         if inverted_residual_setting is None:
+            # inverted_residual_setting = [
+            #     # t, c, n, s
+            #     [1, 16, 1, 1],
+            #     [6, 24, 2, 2],
+            #     [6, 32, 3, 2],
+            #     [6, 64, 4, 2],
+            #     [6, 96, 3, 1],
+            #     [6, 160, 3, 2],
+            #     [6, 320, 1, 1],
+            # ]
             inverted_residual_setting = [
                 # t, c, n, s
                 [1, 16, 1, 1],
-                [6, 24, 2, 2],
-                [6, 32, 3, 2],
-                [6, 64, 4, 2],
+                [6, 24, 2, 1],
+                [6, 32, 3, 1],
+                [6, 64, 4, 1],
                 [6, 96, 3, 1],
-                # [6, 160, 3, 2],
-                # [6, 320, 1, 1],
+                [6, 160, 3, 1],
+                [6, 320, 1, 1],
             ]
 
         # only check the first element, assuming user knows t,c,n,s are required
@@ -177,7 +196,7 @@ def main():
     # Batch, Height, Width
     MyDecodeArray = np.zeros((1, MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_NUM), dtype=np.long)
     # MyDecodeArray = np.zeros((1, 30, 7), dtype=np.long)
-    net = MobileNet_Lottery(MyParam.LOTTERY_NUM, MyParam.EMBEDDED_CH, num_classes=49)
+    net = MobileNet_Lottery(MyParam.LOTTERY_1_MAX_NUM, MyParam.EMBEDDED_CH, num_classes=49)
     res = net.forward(torch.tensor(MyDecodeArray, dtype=torch.long))
     print(res.data.numpy())
     print(torch.argmax(res))

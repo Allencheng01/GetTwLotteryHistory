@@ -10,20 +10,21 @@ from torch.utils.data import DataLoader
 import torch.optim.lr_scheduler as lr_scheduler
 
 import MyParam
-from GetLotteryHistory import GetLotteryHistory
+from GetLotteryHistory_2 import GetLotteryHistory_2
 # import MyModel
 from MyShuffleNet import My_shufflenet_v2_x2_0
+import torchvision.models as models
 from MyDataSet import MyLotteryDataSet
 
 def train():
     _args_ = MyParam.ARGS()
-    if _args_.ReFetchLog or not os.path.isfile(MyParam.SAVE_LIST_FILENAME):
-        LotteryHistoryLists = GetLotteryHistory()
+    if _args_.ReFetchLog or not os.path.isfile(MyParam.SAVE_LIST_FILENAME_2):
+        LotteryHistoryLists = GetLotteryHistory_2()
         LotteryHistoryLists = sorted(LotteryHistoryLists, key=lambda k: k['Index'])
-        with open(MyParam.SAVE_LIST_FILENAME, 'wb') as wfp:
+        with open(MyParam.SAVE_LIST_FILENAME_2, 'wb') as wfp:
             pickle.dump(LotteryHistoryLists, wfp)
     else:
-        with open(MyParam.SAVE_LIST_FILENAME, 'rb') as rfp:
+        with open(MyParam.SAVE_LIST_FILENAME_2, 'rb') as rfp:
             LotteryHistoryLists = pickle.load(rfp)
     
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -32,17 +33,15 @@ def train():
     MyDataSet = MyLotteryDataSet(LotteryHistoryLists)
     dataloader = DataLoader(MyDataSet, shuffle=False, num_workers=6, batch_size=6)
 
-    if os.path.isfile(MyParam.CHECKPOINT_FILENAME):
-        checkpoint = torch.load(MyParam.CHECKPOINT_FILENAME)
+    if os.path.isfile(MyParam.CHECKPOINT_FILENAME2):
+        checkpoint = torch.load(MyParam.CHECKPOINT_FILENAME2)
         net = checkpoint['net']
         _optimizer_ = checkpoint['optimizer']
         _epoch_ = checkpoint['epoch']
         for param_group in _optimizer_.param_groups:
             _min_total_loss_ = param_group['lr']
     else:
-        # net = MobileNet_Lottery(MyParam.LOTTERY_1_MAX_NUM, MyParam.EMBEDDED_CH, num_classes=MyParam.LOTTERY_1_MAX_NUM)
-        # _optimizer_ = optim.SGD(net.parameters(), lr=1e-3, momentum=0.9, weight_decay=1e-4)
-        net = My_shufflenet_v2_x2_0(VocabSize=MyParam.LOTTERY_1_MAX_NUM+1, EmbeddingSize=MyParam.EMBEDDED_CH, num_classes=MyParam.LOTTERY_1_MAX_NUM+1)
+        net = My_shufflenet_v2_x2_0(VocabSize=MyParam.LOTTERY_2_MAX_NUM+1, EmbeddingSize=MyParam.EMBEDDED_CH, num_classes=MyParam.LOTTERY_2_MAX_NUM+1)
         _optimizer_ = optim.Adam(net.parameters())
         _epoch_ = 0
         _min_total_loss_ = sys.maxsize
@@ -83,23 +82,23 @@ def train():
         scheduler.step(_total_loss_)
         # scheduler.step()
 
-        with open('train_log.txt', 'a') as wfd:
+        with open('train_log_2.txt', 'a') as wfd:
             wfd.write('[{0}] _epoch_ = {1} _total_loss_ = {2} mean = {3}\n'.format(MyParam.TRAIN_NUM_INDEX, _epoch_, _total_loss_, np.mean(_loss_list_)))
 
         if _total_loss_ < _min_total_loss_:
             _min_total_loss_ = _total_loss_
             state = {'epoch': _epoch_,
-                     'net': net,
+                     'net':net,
                      'optimizer': _optimizer_,
-                    'total_loss': _total_loss_}
-            torch.save(state, MyParam.CHECKPOINT_FILENAME)
+                     'total_loss': _total_loss_}
+            torch.save(state, MyParam.CHECKPOINT_FILENAME2)
 
 def main():
-    # with open('train_log.txt', 'w') as wfd:
+    # with open('train_log_2.txt', 'w') as wfd:
     #     wfd.write('')
     for i in range(0, MyParam.LOTTERY_NUM):
         MyParam.TRAIN_NUM_INDEX = i
-        MyParam.CHECKPOINT_FILENAME = 'checkpoint{0}.ckpt'.format(MyParam.TRAIN_NUM_INDEX)
+        MyParam.CHECKPOINT_FILENAME2 = 'checkpoint_2_{0}.ckpt'.format(MyParam.TRAIN_NUM_INDEX)
         train()
 
 if __name__ == "__main__":
