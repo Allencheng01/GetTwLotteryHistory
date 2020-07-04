@@ -16,8 +16,8 @@ class MyLotteryDataSet(Dataset):
         TargetIndex = Index + MyParam.LOTTERY_HEIGHT
 
         # Prepare train data
-        # MyDecodeMap = np.zeros((MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_NUM), dtype=np.long)
-        MyDecodeMap = np.zeros((MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_HEIGHT), dtype=np.long)
+        MyDecodeMap = np.zeros((MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_NUM), dtype=np.long)
+        # MyDecodeMap = np.zeros((MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_HEIGHT), dtype=np.long)
         for row in range(Index, Index + MyParam.LOTTERY_HEIGHT):
             for col in range(MyParam.LOTTERY_NUM):
                 MyDecodeMap[row - Index][col] = self.LotteryHistoryLists[row]['Numbers'][col]

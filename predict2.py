@@ -21,6 +21,7 @@ def predict():
     TargetIndex = len(LotteryHistoryLists)
     Index = TargetIndex - MyParam.LOTTERY_HEIGHT
     MyDecodeMap = np.zeros((1, MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_NUM), dtype=np.long)
+    # MyDecodeMap = np.zeros((1, MyParam.LOTTERY_HEIGHT, MyParam.LOTTERY_HEIGHT), dtype=np.long)
     for row in range(Index, Index + MyParam.LOTTERY_HEIGHT):
         for col in range(MyParam.LOTTERY_NUM):
             MyDecodeMap[0][row - Index][col] = LotteryHistoryLists[row]['Numbers'][col]
@@ -34,6 +35,7 @@ def predict():
     with torch.no_grad():
         MyDecodeMap = torch.tensor(MyDecodeMap, dtype=torch.long).to('cuda')
         Predict_Class = net(MyDecodeMap)
+        Predict_Class = torch.nn.functional.softmax(Predict_Class)
 
         values, indices = torch.max(Predict_Class, 1)
         print('[{0}]: {1}'.format(indices.item(), values.item()))
